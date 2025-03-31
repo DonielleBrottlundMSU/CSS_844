@@ -1,0 +1,91 @@
+library(readxl) #read in the excel file 
+library(dplyr)  
+library(tidyr)
+library(tidyverse)
+
+
+vegetation_indices_results_2 <- read_excel("C:/Users/donie/OneDrive - Michigan State University/Classes/CSS 844/DELETE.xlsx")
+
+data_long <- vegetation_indices_results_2 %>%
+  pivot_longer(
+    cols = starts_with("Norm_"), # Select columns starting with "Norm_"
+    names_to = "measurement",
+    values_to = "value"
+  ) %>%
+  mutate(measurement = paste0(Date, "_", measurement)) %>% # Create new column names
+  select(id, measurement, value) # Keep only desired columns
+
+  # starts_with("Norm_") → Selects all columns starting with "Norm_".
+  # pivot_longer() → Converts wide data to long format.
+  # mutate() → Combines the Date value and Norm_ column names into the new format (Date_Norm_<measurement>).
+  # select() → Keeps only the id, new measurement names, and values.
+
+data_long <- data_long %>%
+  group_by(id, measurement) %>%
+  summarise(value = mean(value, na.rm = TRUE), .groups = "drop")  # Take the mean if multiple values exist
+
+data_wide <- data_long %>%
+  pivot_wider(names_from = measurement, values_from = value)
+
+
+data_wide <- data_long %>%
+  pivot_wider(
+    names_from = measurement, 
+    values_from = value)
+
+data_wide$`8.31_Norm_NDVI`
+library(dplyr)
+data_wide <- data_wide %>%
+  mutate(column_name = as.numeric(unlist(`8.31_Norm_NDVI`)))
+
+data_wide$`8.31_Norm_NDVI` <- sapply(data_wide$`8.31_Norm_NDVI`, function(x) if(is.list(x)) x[[1]] else x)
+
+
+
+  #names_from = measurement → Creates new column names from the measurement values.
+  #values_from = value → Fills the new columns with the corresponding value data.
+
+# Save to CSV file
+write.csv(data_wide, "VI_Norm_Results.csv", row.names = FALSE)
+
+#you can save it to a certain folder by including the path or check where you saved it to by looking at this 
+getwd()
+
+
+# Ensure numerical columns are properly converted
+data <- vegetation_indices_results_2 %>%
+  mutate(
+    Avg_Stand_Count = as.numeric(Avg_Stand_Count),
+    Avg_Days_to_Pollen = as.numeric(Avg_Days_to_Pollen),
+    Avg_Days_to_Silk = as.numeric(Avg_Days_to_Silk),
+    Accumulated.GDD = as.numeric(Accumulated.GDD)
+  )
+
+# Transform data by merging Date into column names
+data_transformed <- data %>%
+  pivot_longer(
+    cols = c(Avg_Stand_Count, Avg_Days_to_Pollen, Avg_Days_to_Silk, Accumulated.GDD), 
+    names_to = "Metric",
+    values_to = "Value"
+  ) %>%
+  mutate(Metric = paste0(Date, "_", Metric)) %>%  # Add Date as prefix to column names
+  select(-Date) %>%  # Remove Date column
+  pivot_wider(names_from = Metric, values_from = Value)  # Convert back to wide format
+
+# View transformed dataset
+print(data_transformed)
+
+
+# Sample data (Replace with your actual dataset)
+data_transformed <- data %>%
+  pivot_longer(
+    cols = c(Avg_Stand_Count, Avg_Days_to_Pollen, Avg_Days_to_Silk, Accumulated.GDD), 
+    names_to = "Metric",
+    values_to = "Value"
+  ) %>%
+  mutate(Metric = paste0(Date, "_", Metric)) %>%  # Prefix column names with Date
+  select(-Date) %>%  # Remove Date column since it's now in column names
+  pivot_wider(names_from = Metric, values_from = Value)  # Convert back to wide format
+
+# View transformed dataset
+print(data_transformed)
