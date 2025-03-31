@@ -1,0 +1,81 @@
+library(readxl)
+library(tidyverse)
+library(corrplot)
+library(ggcorrplot)
+library(ggplot2)
+library(dplyr)
+library(tidyr)
+library(reshape2)
+library(readr)
+
+
+
+BoxPlots <- read_excel("Your/Path/file.xlsx")
+
+LAS_H_8_31 <- read_csv("Your/path/file.csv")
+
+VI_Results <- read_csv("Your/Path/file.csv")
+
+
+# Convert wide to long format
+BoxPlots_long <- BoxPlots %>%
+  pivot_longer(cols = everything(), names_to = "Variable", values_to = "Value") %>%
+  mutate(
+    Model = sub("_.*", "", Variable),  # Extract text before "_" (Model Name)
+    Metric = sub(".*_", "", Variable)  # Extract text after "_" (NoCovar, NDRE, PC1)
+  )
+
+
+#Creating the Boxplots to compare all the models we used togther. 
+ggplot(BoxPlots_long, aes(x = Metric, y = Value, fill = Metric)) +
+  geom_boxplot() +
+  facet_wrap(~Model, scales = "free_x", nrow = 1) +  # Facet by model
+  theme_minimal() +
+  theme(
+    axis.text.x = element_text(angle = 45, hjust = 1, size = 12),  # Rotate x-axis text
+    axis.title = element_text(face = "bold", size = 14),  # Bold axis labels
+    plot.title = element_text(face = "bold", size = 16, hjust = 0.5),  # Bold & center title
+    legend.title = element_text(face = "bold", size = 14),  # Bold legend title
+    legend.text = element_text(size = 12),  # Adjust legend text size
+    strip.text = element_text(face = "bold", size = 14)  # Bold & larger facet (model) names
+  ) +
+  labs(
+    title = "Grouped Boxplots by Model",
+    x = "Metric",
+    y = "Predictive Accuracy",
+    fill = "Evaluation Metric"  # Change legend title
+  ) +
+  scale_fill_manual(
+    values = c("lightblue", "lightgreen", "lightcoral", "darkblue"),
+    labels = c("NoCovar" = "No Covariates", "NDRE" = "NDRE Index", "PC1" = "Principal Component 1")  # Rename legend labels
+  )
+
+
+
+
+ggplot(BoxPlots_long, aes(x = Metric, y = Value, fill = Metric)) +
+  geom_col(stat = "summary", fun = "mean", position = "dodge", alpha = 0.8) +  # Bar plot using mean values
+  facet_wrap(~Model, scales = "free_x", nrow = 1) +  # Facet by model
+  theme_minimal() +
+  theme(
+    axis.text.x = element_text(angle = 45, hjust = 1, size = 12),  # Rotate x-axis text
+    axis.title = element_text(face = "bold", size = 14),  # Bold axis labels
+    plot.title = element_text(face = "bold", size = 16, hjust = 0.5),  # Bold & center title
+    legend.title = element_text(face = "bold", size = 14),  # Bold legend title
+    legend.text = element_text(size = 12),  # Adjust legend text size
+    strip.text = element_text(face = "bold", size = 14)  # Bold & larger facet (model) names
+  ) +
+  labs(
+    title = "Average Predictive Accuracy by Model",
+    x = "Evaluation Metric",
+    y = "Predictive Accuracy",
+    fill = "Evaluation Metric"
+  ) +
+  scale_fill_manual(
+    values = c("darkorange", "tan", "darkgreen"),
+    labels = c("NoCovar" = "No Covariates", "NDRE" = "NDRE Index", "PC1" = "Principal Component 1")  # Rename legend labels
+  )
+
+
+
+
