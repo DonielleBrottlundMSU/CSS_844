@@ -4,7 +4,7 @@ library(tidyr)
 library(tidyverse)
 
 
-vegetation_indices_results_2 <- read_excel("C:/Users/donie/OneDrive - Michigan State University/Classes/CSS 844/DELETE.xlsx")
+vegetation_indices_results_2 <- read_excel("YOUR/PATH/file.xlsx")
 
 data_long <- vegetation_indices_results_2 %>%
   pivot_longer(
